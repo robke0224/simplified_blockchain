@@ -1,97 +1,94 @@
-#include "mylib.h"
-#include "randomizer.h"
-#include "functions.h"
-#include "naudotojas.h"
-#include "transakcija.h"
-#include "merkletree.h"
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
 #include "block.h"
+#include "functions.h"
+#include "merkletree.h"
+#include "mylib.h"
+#include "naudotojas.h"
+#include "randomizer.h"
+#include "transakcija.h"
+#include <chrono>
 
-
-#define TRANSACTIONS_PER_BLOCK 100
-#define MINE_ATTEMPTS 100000
-#define CANDIDATE_BLOCKS 5
-
-
-vector<Transaction> getRandomTransactions(vector<Transaction>& allTransactions, int numTransactions, const vector<User>& users) {
-    std::shuffle(allTransactions.begin(), allTransactions.end(), std::mt19937(std::random_device()()));
-    if (allTransactions.size() <= numTransactions) {
-        return allTransactions;
-    }
-    vector<Transaction> randomTransactions(allTransactions.begin(), allTransactions.begin() + numTransactions);
-    return randomTransactions;
+// Function to print a transaction in detail
+void printTransaction(const Transaction& transaction) {
+    std::cout << "Transaction ID: " << transaction.getID() << std::endl;
+    std::cout << "Sender: " << transaction.getSender() << std::endl;
+    std::cout << "Receiver: " << transaction.getReceiver() << std::endl;
+    std::cout << "Amount: " << transaction.getAmount() << std::endl;
+    std::cout << "Timestamp: " << transaction.getTimeStamp() << std::endl;  // Corrected to getTimeStamp
+    std::cout << "---------------------------------" << std::endl;
 }
 
-void removeApprovedTransactions(vector<Transaction>& allTrans, const std::vector<Transaction>& approvedTrans) {
-    allTrans.erase(std::remove_if(allTrans.begin(), allTrans.end(), [&approvedTrans](const Transaction& t) {
-        return std::find_if(approvedTrans.begin(), approvedTrans.end(), [&t](const Transaction& at) {
-            return t.GetID() == at.GetID();
-        }) != approvedTrans.end();
-    }), allTrans.end());
-}
+// Function to print block details
+void printBlock(const Block& block) {
+    std::cout << "Block Hash: " << block.getHash() << std::endl;  // Assuming getHash is the correct method
+    std::cout << "Previous Block Hash: " << block.getPreviousHash() << std::endl;
+    std::cout << "Block Transactions:" << std::endl;
 
-void verifyAndPushBlock(std::stack<Block>& blockchain, Block& block, const vector<Transaction>& blockTransactions, vector<Transaction>& transactions, UserManager& userManager) {
-    if (block.getHash() == getHashString(block.getPreviousHash() + block.getMerkleRoot() + std::to_string(block.getTimestamp()) + std::to_string(block.getDifficultyTarget()) + std::to_string(block.getNonce())) && block.meetRequirements()) {
-        for (const Transaction& tx : blockTransactions) {
-            userManager.updateBalance(tx.GetSender(), -tx.GetAmount()); 
-            userManager.updateBalance(tx.GetReceiver(), tx.GetAmount());
-        }
-        blockchain.push(std::move(block));
-        removeApprovedTransactions(transactions, blockTransactions);
-        cout << "Block " << blockchain.size() << ": " << block.getHash() << endl;
-        cout << "Transactions left in pool: " << transactions.size() << endl;
-    } else {
-        cout << "Fake block detected!" << endl;
+    for (const auto& transaction : block.getTransactions()) {
+        printTransaction(transaction);
     }
+
+    std::cout << "---------------------------------" << std::endl;
 }
 
 int main() {
-    UserManager userManager(1000);
-    vector<User> users = userManager.getUsers();
-    TransactionBuilder transactionBuilder(10000, userManager);
-    vector<Transaction> transactions = transactionBuilder.getTransactions();
-    
-    vector<Transaction> genesisTransactions;
-    Block genesisBlock("0", 4, genesisTransactions);
-    
-    std::stack<Block> blockchain;
-    blockchain.push(genesisBlock);
-    
-    unsigned int difficultyTarget = 4;
-    unsigned int attemptsPerMiner = MINE_ATTEMPTS;
-    
-    vector<Mine> miners;
-    for (int i = 0; i < 5; ++i) {
-        miners.emplace_back(i + 1);
-    }
-    
-    while (!transactions.empty()) {
-        std::vector<Transaction> blockTransactions = getRandomTransactions(transactions, TRANSACTIONS_PER_BLOCK, users);
-        Block candidateBlock(blockchain.top().getHash(), difficultyTarget, blockTransactions);
-        bool blockMined = false;
-        
-        for (auto &miner : miners) {
-            if (blockMined) break;
-            try {
-                Block minedBlock = miner.mineBlock(candidateBlock.getPreviousHash(), difficultyTarget, blockTransactions, attemptsPerMiner);
-                verifyAndPushBlock(blockchain, minedBlock, blockTransactions, transactions, userManager);
-                miner.incrementBlocksMined(); 
-                cout << "Miner " << miner.getID() << " successfully mined the block!" << endl;
-                blockMined = true;
-            } catch (const std::runtime_error& e) {
-                cout << e.what() << endl;  // Mining attempt failed
-            }
-        }
+    // Initialize the user manager with a number of users (e.g., 10 users)
+    int numberOfUsers = 10;
 
-        if (!blockMined) {
-            cout << "All miners failed to mine the block in" << attemptsPerMiner << "attempts. Increasing the attempts" << endl;
-            attemptsPerMiner *= 2;
-            
+    // Create a list of users with names, public keys, and initial balances
+    std::vector<User> users;
+    for (int i = 0; i < numberOfUsers; ++i) {
+        std::string name = "User" + std::to_string(i);
+        std::string publicKey = "PublicKey" + std::to_string(i);  // Generate a dummy public key
+        long double balance = 1000.0;  // Default balance for all users
+        users.push_back(User(name, publicKey, balance));  // Corrected to match the 3-parameter constructor
+    }
+
+    // Vector to hold blockchain blocks
+    std::vector<Block> blockchain;
+
+    // Initialize a previous hash (for the first block, it can be "0")
+    std::string previousBlockHash = "0";
+
+    // Create a new block with a difficulty target and an empty list of transactions
+    unsigned int difficultyTarget = 2;
+    std::vector<Transaction> transactions;
+
+    // Generate random transactions
+    int numTransactions = 5;
+    for (int i = 0; i < numTransactions; ++i) {
+        // Select random sender and receiver from users
+        std::string sender = users[i % numberOfUsers].getPublicKey();   // Using publicKey as sender identifier
+        std::string receiver = users[(i + 1) % numberOfUsers].getPublicKey();  // Using publicKey as receiver identifier
+        double amount = (rand() % 100) + 1;  // Random amount between 1 and 100
+
+        // Create a timestamp for the transaction
+        std::string timestamp = std::to_string(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+
+        // Create the transaction
+        Transaction transaction(sender, receiver, amount, timestamp);
+
+        // Assuming a simple validation logic for the transaction (you can replace it with your logic)
+        if (amount <= users[i % numberOfUsers].getBalance()) {
+            transactions.push_back(transaction);
+            std::cout << "Added transaction " << i + 1 << " to the block." << std::endl;
+        } else {
+            std::cerr << "Transaction failed: Insufficient funds." << std::endl;
         }
     }
-    
-    cout << "Mining process completed. Blockchain contains " << blockchain.size() << " blocks." << endl;
-    for (const auto& miner : miners) {
-        cout << "Miner " << miner.getID() << " mined " << miner.getBlocksMined() << " blocks." << endl;
-    }
+
+    // Create the block with the transactions, previous hash, and difficulty target
+    Block currentBlock(previousBlockHash, difficultyTarget, transactions);
+
+    // Add the block to the blockchain
+    blockchain.push_back(currentBlock);
+
+    // Print the created block
+    std::cout << "Block successfully created!" << std::endl;
+    printBlock(currentBlock);
+
     return 0;
 }
