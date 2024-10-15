@@ -47,7 +47,7 @@ public:
     // Getters
     std::string getPreviousHash() const { return previousHash; }
     std::string getHash() const { 
-        return keiciaIvesti(previousHash + merkleRoot + std::to_string(timestamp) + std::to_string(difficultyTarget) + std::to_string(nonce)); 
+        return keiciaIvesti(previousHash + merkleRoot + std::to_string(timestamp) + std::to_string(difficultyTarget) + std::to_string(nonce), 'j', 2, true, false); 
 
     }
     unsigned long long int getTimestamp() const { return timestamp; }
@@ -82,67 +82,61 @@ public:
 // Miner class that represents a miner attempting to mine blocks with multi-threading
 class Miner {
 private:
-    unsigned int id;
-    unsigned int blocksMined;
-    std::atomic<bool> blockMined;  // Shared flag to indicate if the block is mined
-
-    // Function for each thread to mine a block by trying different nonces
-    Block mineBlockThread(Block block, unsigned int attempts, std::promise<Block>& resultPromise) {
-        for (unsigned int i = 0; i < attempts && !blockMined; ++i) {
-            unsigned int nonce = Random::randomUnsignedInt(0, UINT_MAX);
-            block.setNonce(nonce);
-
-            if (block.meetRequirements()) {
-                blockMined = true;  // Set flag to true when block is mined
-                resultPromise.set_value(block);  // Send mined block result
-                return block;
-            }
-        }
-
-        throw std::runtime_error("Failed to mine block in thread.");
-    }
+    int id;  // Unique miner ID
+    std::atomic<bool> blockMined;  // Flag to indicate if the block is mined
+    int blocksMined;  // Counter for how many blocks this miner has mined
 
 public:
-    // Constructor
-    Miner(unsigned int minerId) : id(minerId), blocksMined(0), blockMined(false) {}
+    // Constructor that initializes the miner with an ID
+    Miner(int minerID) : id(minerID), blockMined(false), blocksMined(0) {}
 
-    // Method to mine a block using multiple threads
-    Block mineBlock(const std::string& prevHash, unsigned int difficultyTarget, const std::vector<Transaction>& transactions, unsigned int attempts, unsigned int numThreads) {
-        Block block(prevHash, difficultyTarget, transactions);
-        std::cout << "Starting multi-threaded mining process for Block by Miner ID " << id << std::endl;
+    // Deleted copy constructor and assignment operator
+    Miner(const Miner&) = delete;
+    Miner& operator=(const Miner&) = delete;
 
-        // Calculate attempts per thread
-        unsigned int attemptsPerThread = attempts / numThreads;
-
-        // Vector to store thread promises
-        std::vector<std::future<Block>> futures;
-        std::vector<std::thread> threads;
-
-        // Launch threads to mine the block in parallel
-        for (unsigned int i = 0; i < numThreads; ++i) {
-            std::promise<Block> resultPromise;
-            futures.push_back(resultPromise.get_future());
-            threads.emplace_back(&Miner::mineBlockThread, this, block, attemptsPerThread, std::ref(resultPromise));
-        }
-
-        // Wait for any thread to successfully mine the block
-        Block minedBlock = futures[0].get();
-        for (auto& t : threads) {
-            t.join();
-        }
-
-        blocksMined++;
-        std::cout << "Block mined successfully by Miner " << id << " with hash: " << minedBlock.getHash() << std::endl;
-
-        return minedBlock;
+    // Allow move constructor and move assignment operator
+    Miner(Miner&& other) noexcept : id(other.id), blockMined(other.blockMined.load()), blocksMined(other.blocksMined) {
+        other.blocksMined = 0;  // Reset other miner's block count after moving
     }
 
-    // Increment the number of blocks mined by the miner
-    void incrementBlocksMined() { blocksMined++; }
+    Miner& operator=(Miner&& other) noexcept {
+        if (this != &other) {
+            id = other.id;
+            blockMined.store(other.blockMined.load());
+            blocksMined = other.blocksMined;
+            other.blocksMined = 0;
+        }
+        return *this;
+    }
 
-    // Getters
-    unsigned int getBlocksMined() const { return blocksMined; }
-    unsigned int getID() const { return id; }
+    // Method to simulate mining a block
+    Block mineBlock(const std::string& prevHash, unsigned int difficultyTarget, const std::vector<Transaction>& transactions, unsigned int attempts, unsigned int numThreads) {
+        // Logic to mine the block, simplified here:
+        for (unsigned int i = 0; i < attempts; ++i) {
+            // Simulated mining logic, typically you'd calculate a hash here
+            if (i % difficultyTarget == 0) {
+                blockMined.store(true);
+                std::cout << "Miner " << id << " mined a block!" << std::endl;
+                return Block(prevHash, difficultyTarget, transactions);  // Return a successfully mined block
+            }
+        }
+        throw std::runtime_error("Mining failed after max attempts");
+    }
+
+    // Increment the number of blocks mined
+    void incrementBlocksMined() {
+        ++blocksMined;
+    }
+
+    // Getter for the miner's ID
+    int getID() const {
+        return id;
+    }
+
+    // Getter for the number of blocks this miner has mined
+    int getBlocksMined() const {
+        return blocksMined;
+    }
 };
 
 #endif
