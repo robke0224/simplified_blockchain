@@ -13,8 +13,9 @@ char hexas(char hexChar, int step);
 string sesiolika_bitu(string& bits, const string& originalInput);
 int priebalses(const string& input);
 string daugyba (string bits, int wordSum, bool invert);
-void apdoroja(const string& input, ofstream& outputFile);
-void failiukas(const string& filename, char c, size_t size);
+//void apdoroja(const string& input, ofstream& outputFile);
+string custom_hash(const std::string& input);
+/*void failiukas(const string& filename, char c, size_t size);
 void kratinukas(const string& filename, size_t size);
 void nevienodi(const string& filename1, const std::string& filename2, size_t size);
 void tuscias(const string& filename);
@@ -25,7 +26,6 @@ vector<pair<string, string> > loadStringPairsFromFile(const string& filename);
 string generate_random_string(size_t length, const string& charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 double compute_bit_difference(const string &binary1, const string &binary2);
 double compute_hex_difference(const string &hex1, const string &hex2);
-void fillBits(std::bitset<256>& bits, unsigned long long sum);
-string getHashString(const string& input);
+*/
 
 #endif
