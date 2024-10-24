@@ -1,8 +1,3 @@
-#ifndef MYLIB_H
-#define MYLIB_H
-
-#define INT_BITS 64
-
 #include <iostream>
 #include <limits>
 #include <numeric>
@@ -11,7 +6,6 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <string>
 #include <bitset>
 #include <cmath>
 #include <cstdlib>
@@ -19,13 +13,12 @@
 #include <chrono>
 #include <random>
 #include <iomanip>
-#include <unordered_set>
 #include <cstring>
 #include <algorithm>
-#include <thread>
-#include <stdexcept>
-#include <unordered_map>
-#include <stack>
+#include <unordered_set>
+#include <utility>
+#include <functional> 
+
 
 using std::cin;
 using std::cout;
@@ -36,6 +29,5 @@ using std::cerr;
 using std::move;
 using std::to_string;
 using std::stringstream;
-
-
-#endif
+using std::setprecision;
+using std::fixed;
