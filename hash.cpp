@@ -1,18 +1,5 @@
-#include "functions.h"
-#include <bitset>
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <iomanip>
-#include <algorithm>
-#include <cmath>
-#include <ctime>
-#include <fstream>
-#include <random>
-#include <vector>
-#include <unordered_set>
-#include <utility>
-#include <functional> 
+#include "hash.h"
+#include "lib.h"
 
 using namespace std;
 
@@ -184,7 +171,7 @@ string daugyba (string bits, int wordSum, bool invert) {
     return bits;
 }
 
-void apdoroja(const string& input, ofstream& outputFile) {
+/*void apdoroja(const string& input, ofstream& outputFile) {
     string pakeista_ivestis = input + to_string(input.length());
     pakeista_ivestis = keiciaIvesti(pakeista_ivestis, 'j', 2, true, false);
     string binaryResult = ivestis_i_bitus(pakeista_ivestis, 32, 'i');
@@ -193,9 +180,20 @@ void apdoroja(const string& input, ofstream& outputFile) {
     string hashResult = sesiolika_bitu(pakeisti_bitai, pakeista_ivestis);
 
     outputFile << "hash'as: " << hashResult << endl;
+}*/
+
+    string custom_hash(const string& input) {
+    string pakeista_ivestis = input + to_string(input.length());
+    pakeista_ivestis = keiciaIvesti(pakeista_ivestis, 'j', 2, true, false);
+    string binaryResult = ivestis_i_bitus(pakeista_ivestis, 32, 'i');
+    int wordSum = priebalses(pakeista_ivestis);
+    string pakeisti_bitai = daugyba(binaryResult, wordSum, true);
+    string hashResult = sesiolika_bitu(pakeisti_bitai, pakeista_ivestis);
+
+    return hashResult;  // Return the final hash result
 }
 
-
+/*
 ///////////////////////////////////////////////////////////////////////////////////////////
 // failas su viena raide
 void failiukas(const string& filename, char c, size_t size) {
@@ -364,42 +362,4 @@ double compute_hex_difference(const string &hex1, const string &hex2) {
     }
     return (differences / (double)hex1.size()) * 100;
 }
-//////////////////////////////////////////
-
-
-
-// Custom hash function for strings
-string getHashString(const string& input) {
-    // Initialize a large hash value
-    unsigned long long hashValue = 0xcbf29ce484222325;  // A large prime constant (FNV offset basis)
-    const unsigned long long prime = 0x100000001b3;     // A large prime constant (FNV prime)
-
-    // Simple custom hashing logic: XOR each character and multiply by prime
-    for (char c : input) {
-        hashValue ^= static_cast<unsigned long long>(c);
-        hashValue *= prime;
-    }
-
-    // Convert the resulting hash to a 256-bit bitset
-    std::bitset<256> bits(hashValue);
-    
-    // You may apply additional custom bit manipulations if needed
-    fillBits(bits, hashValue);  // Use fillBits for further customization, if required
-
-    // Convert bitset to a hexadecimal string
-    std::stringstream ss;
-    for (int i = 0; i < 256; i += 4) {
-        int val = bits[i] * 8 + bits[i + 1] * 4 + bits[i + 2] * 2 + bits[i + 3];
-        ss << std::hex << val;
-    }
-
-    return ss.str();
-}
-
-
-// Fills the bitset with transformations based on the sum (optional)
-void fillBits(std::bitset<256>& bits, unsigned long long sum) {
-    for (size_t i = 0; i < bits.size(); ++i) {
-        bits[i] = (sum >> (i % 64)) & 1;  // Custom bit shifting logic
-    }
-}
+*/
