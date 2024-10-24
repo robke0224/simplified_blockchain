@@ -50,15 +50,32 @@ public:
     }
 
     // Display transaction details
-    void display() const {
-        cout << "Transaction ID: " << transaction_id << endl;
-        cout << "Inputs: " << endl;
+   void display() const {
+    cout << "=================================================" << endl;
+    cout << "|               Transaction Details             |" << endl;
+    cout << "=================================================" << endl;
+    cout << "| Transaction ID: " << transaction_id << endl;
+    cout << "-------------------------------------------------" << endl;
+    cout << "| Inputs: " << endl;
+    if (inputs.empty()) {
+        cout << "|    No inputs available." << endl;
+    } else {
         for (const auto& input : inputs) {
-            input.display();
-        }
-        cout << "Outputs: " << endl;
-        for (const auto& output : outputs) {
-            output.display();
+            cout << "|    ";
+            input.display();  // Assuming input.display() prints on a single line
         }
     }
+    cout << "-------------------------------------------------" << endl;
+    cout << "| Outputs: " << endl;
+    if (outputs.empty()) {
+        cout << "|    No outputs available." << endl;
+    } else {
+        for (const auto& output : outputs) {
+            cout << "|    ";
+            output.display();  // Assuming output.display() prints on a single line
+        }
+    }
+    cout << "=================================================" << endl << endl;
+}
+
 };
