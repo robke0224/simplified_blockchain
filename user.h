@@ -69,12 +69,23 @@ public:
     }
 
     // Display user info and their UTXOs
-    void display() const {
-        cout << "User: " << name << ", Public Key: " << public_key
-             << ", Balance: " << getBalance() << endl;
-        cout << "UTXOs:" << endl;
+   void display() const {
+    cout << "===========================================" << endl;
+    cout << "|              User Information           |" << endl;
+    cout << "===========================================" << endl;
+    cout << "| Name:       " << name << endl;
+    cout << "| Public Key: " << public_key << endl;
+    cout << "| Balance:    " << getBalance() << endl;
+    cout << "-------------------------------------------" << endl;
+    cout << "| UTXOs: " << (utxos.empty() ? "No UTXOs available" : "") << endl;
+
+    if (!utxos.empty()) {
         for (const auto& utxo : utxos) {
-            utxo.display();
+            cout << "|    ";
+            utxo.display(); // Assuming utxo.display() is a single-line output
         }
     }
+    cout << "===========================================" << endl << endl;
+}
+
 };
