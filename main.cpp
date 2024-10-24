@@ -10,9 +10,9 @@ using namespace std::chrono;
 
 // Helper function to generate a random balance
 int generateBalance() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distr(100, 1000000);
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> distr(100, 1000000);
     return distr(gen);
 }
 
@@ -20,36 +20,36 @@ int main() {
     bool endProgram = false;
 
     while (!endProgram) {
-        std::cout << "Starting user creation..." << std::endl;
+        cout << "Starting user creation..." << endl;
 
         // Create users
-        std::vector<User> users;
+        vector<User> users;
         for (int i = 0; i < 1000; ++i) {
-            std::cout << "Creating user " << i << std::endl;
+            cout << "Creating user " << i << endl;
             int initialBalance = generateBalance();
-            User user("User" + std::to_string(i), custom_hash("User" + std::to_string(i)), initialBalance);
+            User user("User" + to_string(i), custom_hash("User" + to_string(i)), initialBalance);
             users.push_back(user);
 
             // Create initial UTXO for each user
             UTXO initialUTXO(user.getPublicKey(), initialBalance);
             user.addUTXO(initialUTXO);
 
-            std::cout << "Displaying user info for User" << i << std::endl;
+            cout << "Displaying user info for User" << i << endl;
             user.display();  // Display user info
         }
 
-        std::cout << "Users created successfully!" << std::endl;
+        cout << "Users created successfully!" << endl;
 
         // Create blockchain with difficulty level 4
         Blockchain blockchain(4);
-        std::cout << "Blockchain created with difficulty level 4." << std::endl;
+        cout << "Blockchain created with difficulty level 4." << endl;
 
         // Create transactions
-        std::vector<Transaction> transactions;
-        std::cout << "Starting transaction creation..." << std::endl;
+        vector<Transaction> transactions;
+        cout << "Starting transaction creation..." << endl;
 
         for (int i = 0; i < 10000; ++i) {
-            std::cout << "Creating transaction " << i << std::endl;
+            cout << "Creating transaction " << i << endl;
 
             // Randomly select sender and receiver
             int senderIndex = rand() % users.size();
@@ -63,17 +63,24 @@ int main() {
 
             // Determine the amount to send
             int amount = rand() % 10000 + 1;
-            std::cout << "Sender: " << sender.getPublicKey() << ", Receiver: " << receiver.getPublicKey() << ", Amount: " << amount << std::endl;
+            cout << "===================================" << endl;
+            cout << "|        Transaction Details      |" << endl;
+            cout << "===================================" << endl;
+            cout << "| Sender:   " << sender.getPublicKey() << endl;
+            cout << "| Receiver: " << receiver.getPublicKey() << endl;
+            cout << "| Amount:   " << amount << endl;
+            cout << "===================================" << endl;
+
 
             // Collect sender's UTXOs to cover the amount
-            std::vector<UTXO> selectedInputs = sender.selectUTXOs(amount);
+            vector<UTXO> selectedInputs = sender.selectUTXOs(amount);
             if (selectedInputs.empty()) {
-                std::cout << "Skipping transaction " << i << ": Sender does not have enough balance." << std::endl;
+                cout << "Skipping transaction " << i << ": Sender does not have enough balance." << endl;
                 continue;  // If sender doesn't have enough balance, skip the transaction
             }
 
             // Create outputs: One for the receiver, one for the change (if any)
-            std::vector<UTXO> outputs;
+            vector<UTXO> outputs;
             outputs.emplace_back(receiver.getPublicKey(), amount);
 
             // Calculate total input and change
@@ -98,23 +105,23 @@ int main() {
                 sender.addUTXO(outputs[1]);  // Sender gets the change UTXO
             }
 
-            std::cout << "Transaction " << i << " created and displayed." << std::endl;
+            cout << "Transaction " << i << " created and displayed." << endl;
             tx.display();  // Display transaction details
         }
 
-        std::cout << "All transactions created!" << std::endl;
+        cout << "All transactions created!" << endl;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
      // Start measuring block processing time
 auto start = high_resolution_clock::now();
 
 try {
-    std::cout << "Starting to process transactions into blocks..." << std::endl;
+    cout << "Starting to process transactions into blocks..." << endl;
     size_t blockCount = 0;
     size_t transactionCount = 0;
 
     while (!transactions.empty()) {
-        size_t blockSize = std::min((size_t)100, transactions.size());
-        std::vector<Transaction> blockTxs;
+        size_t blockSize = std::min((size_t)100, transactions.size()); //100
+        vector<Transaction> blockTxs;
         blockTxs.reserve(blockSize);
         blockTxs.assign(transactions.begin(), transactions.begin() + blockSize);
 
@@ -125,29 +132,29 @@ try {
         // Adding block to the blockchain with exception handling
         try {
             blockchain.addBlock(blockTxs);
-        } catch (const std::exception& e) {
-            std::cerr << "Error while adding block: " << e.what() << std::endl;
+        } catch (const exception& e) {
+            cerr << "Error while adding block: " << e.what() << endl;
             break;  // Exit the loop if there is an error adding the block
         }
 
         transactionCount += blockSize;
 
         if (transactionCount % 25 == 0) {
-            std::cout << transactionCount << " transactions processed so far." << std::endl;
+            cout << transactionCount << " transactions processed so far." << endl;
         }
 
         auto block_duration = duration_cast<milliseconds>(high_resolution_clock::now() - block_start);
-        std::cout << "Block " << ++blockCount << " processed in " << block_duration.count() << " ms with " << blockSize << " transactions." << std::endl;
+        cout << "Block " << ++blockCount << " processed in " << block_duration.count() << " ms with " << blockSize << " transactions." << endl;
     }
 
 } catch (const std::exception& e) {
-    std::cerr << "Unexpected error during block processing: " << e.what() << std::endl;
+    cerr << "Unexpected error during block processing: " << e.what() << endl;
 }
 
 auto duration = duration_cast<milliseconds>(high_resolution_clock::now() - start);
-std::cout << "Total block processing took: " << duration.count() << " milliseconds" << std::endl;
+cout << "Total block processing took: " << duration.count() << " milliseconds" << endl;
 
-std::cout << "All transactions processed into blocks." << std::endl;
+cout << "All transactions processed into blocks." << endl;
 
 blockchain.displayBlockchain();
 
@@ -155,14 +162,14 @@ blockchain.displayBlockchain();
 
         // Ask the user if they want to end the program
         char userInput;
-        std::cout << "Do you want to end the program? (y/n): ";
-        std::cin >> userInput;
+        cout << "Do you want to end the program? (y/n): ";
+        cin >> userInput;
 
         if (userInput == 'y' || userInput == 'Y') {
             endProgram = true;
-            std::cout << "Ending program..." << std::endl;
+            cout << "Ending program..." << endl;
         } else {
-            std::cout << "Restarting the process..." << std::endl;
+            cout << "Restarting the process..." << endl;
         }
     }
 
