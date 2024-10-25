@@ -1,5 +1,6 @@
 #include "lib.h"
 #include "block.h"
+#include <vector>
 
 class Blockchain {
 private:
@@ -34,5 +35,10 @@ public:
     // Get the latest block in the chain
     Block getLatestBlock() const {
         return chain.back();
+    }
+
+    // New method: Get all blocks in the chain
+    const vector<Block>& getBlocks() const {
+        return chain;
     }
 };
