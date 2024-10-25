@@ -34,12 +34,12 @@ This project is a basic implementation of a blockchain system. It includes compo
 
 1. **Clone the Repository**: 
    ```bash
-   git clone https://github.com/your-repo/blockchain-project.git
-   cd blockchain-project
+   git clone https://github.com/robke0224/simplified_blockchain
+   cd simplified_blockchain
 2. **Compile the Code:** Use a C++ compiler to compile the code. For example, using `g++`:
 
     ```bash
-    g++ main.cpp hash.cpp -o blockchain
+    g++ -std=c++11 *.cpp -o blockchain
     ```
 
 3. **Run the Application:**
