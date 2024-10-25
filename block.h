@@ -52,7 +52,7 @@ public:
     string calculateBlockHash() const {
         string blockData = to_string(version) + to_string(index) + previousHash + to_string(nonce) + timestamp;
         for (const auto& tx : transactions) {
-            blockData += tx.getTransactionID(); // Append transaction IDs
+            blockData += tx.GetID(); // Append transaction IDs
         }
         return custom_hash(blockData); // Hash the block data
     }
@@ -110,7 +110,7 @@ public:
         os << "|    No transactions in this block." << endl;
     } else {
         for (const auto& tx : transactions) {
-            os << "|    Transaction ID: " << tx.getTransactionID() << endl;
+            os << "|    Transaction ID: " << tx.GetID() << endl;
         }
     }
     os << "=============================================================" << endl << endl;
