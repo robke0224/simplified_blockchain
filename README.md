@@ -1,9 +1,9 @@
 # simplified_blockchain
-# Blockchain Project
 
 ## Overview
 
 This project is a basic implementation of a blockchain system. It includes components such as blocks, transactions, users, and hashing mechanisms to simulate the functionality of a blockchain. The project is written in C++ and provides a simple structure for managing users, transactions, and blocks using cryptographic hashes.
+<img width="933" alt="Screenshot 2024-10-25 at 04 05 58" src="https://github.com/user-attachments/assets/91dab9b8-f9ec-4a00-9ae3-d17629159e79">
 
 ## Features
 
